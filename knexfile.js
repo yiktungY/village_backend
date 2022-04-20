@@ -10,8 +10,12 @@ module.exports = {
     },
   },
   production: {
-    client: "mysql",
-    connection: process.env.JAWSDB_URL,
+    host: "ro2padgkirvcf55m.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
+    user: "z8sqws7axd2mi1nk",
+    password: "qvbjl8qqn0y0r1fw",
+    database: "village_database",
+    port: "3308",
+    Database: "grqdn5xptvibl21s",
   },
 };
 // const connections = {
