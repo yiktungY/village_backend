@@ -1,4 +1,4 @@
-const knex = require("knex")(require("../knexfile.js").development);
+const knex = require("knex")(require("../knexfile.js").production);
 
 const applyToPost = (req, res) => {
   const userId = req.user.displayName;
