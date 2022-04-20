@@ -10,6 +10,7 @@ module.exports = {
     },
   },
   production: {
+    client: "mysql",
     host: "ro2padgkirvcf55m.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
     user: "z8sqws7axd2mi1nk",
     password: "qvbjl8qqn0y0r1fw",
