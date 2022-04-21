@@ -25,7 +25,7 @@ exports.seed = async function (knex) {
   // Insert mock posts into the table
 
   await knex("posts").del().insert(mockPosts);
-  await knex("users").insert({
+  await knex("users").del().insert({
     google_id: "05f134da-b614-11ec-af3d-52146bdd15d0",
     avatar_url: "https://avatars.githubusercontent.com/u/92953487?v=4",
     displayName: "dummy-user",
