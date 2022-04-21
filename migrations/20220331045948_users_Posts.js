@@ -29,12 +29,7 @@ exports.up = function (knex) {
       table.string("status").notNullable();
       table.timestamp("updated_at").defaultTo(knex.fn.now());
       table.uuid("user_id").notNullable();
-      table
-        .foreign("user_id")
-        .references("id")
-        .inTable("users")
-        .onUpdate("CASCADE")
-        .onDelete("CASCADE");
+      table.foreign("user_id").references("id").inTable("users");
     })
     .createTable("applyList", (table) => {
       table.uuid("id").primary().defaultTo(knex.raw("(UUID())"));
@@ -47,19 +42,10 @@ exports.up = function (knex) {
       table.string("post_title").notNullable();
       table.timestamp("updated_at").defaultTo(knex.fn.now());
       table.uuid("user_id").notNullable();
-      table
-        .foreign("user_id")
-        .references("id")
-        .inTable("users")
-        .onUpdate("CASCADE")
-        .onDelete("CASCADE");
+      table.foreign("user_id").references("id").inTable("users");
+
       table.uuid("post_id").notNullable();
-      table
-        .foreign("post_id")
-        .references("id")
-        .inTable("posts")
-        .onUpdate("CASCADE")
-        .onDelete("CASCADE");
+      table.foreign("post_id").references("id").inTable("posts");
     });
   // .createTable("genre", (table) => {
   //   table.increments("id").primary();
