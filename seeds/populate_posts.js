@@ -23,7 +23,12 @@ exports.seed = async function (knex) {
   //   });
   // }
   // Insert mock posts into the table
-
+  await knex("users").del().insert({
+    google_id: "05f134da-b614-11ec-af3d-52146bdd15d0",
+    avatar_url: "https://avatars.githubusercontent.com/u/92953487?v=4",
+    displayName: "dummy-user",
+    email: "123example@gmail.com",
+  });
   await knex("posts")
     .del()
     .insert({
@@ -33,12 +38,6 @@ exports.seed = async function (knex) {
       type: "Accounting",
       status: "open",
     });
-  await knex("users").insert({
-    google_id: "05f134da-b614-11ec-af3d-52146bdd15d0",
-    avatar_url: "https://avatars.githubusercontent.com/u/92953487?v=4",
-    displayName: "dummy-user",
-    email: "123example@gmail.com",
-  });
 };
 
 // // A library for generating mock data
