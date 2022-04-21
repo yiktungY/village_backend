@@ -7,24 +7,32 @@ exports.seed = async function (knex) {
   // Deletes ALL existing entries
   await knex("applyList").del();
 
-  const mockPosts = [];
+  // const mockPosts = [];
 
-  // Generate 10 posts
-  for (let i = 0; i < 10; i++) {
-    // Select a user id randomly from the list of users to create a post for
+  // // Generate 10 posts
+  // for (let i = 0; i < 10; i++) {
+  //   // Select a user id randomly from the list of users to create a post for
 
-    // Use user id from users table for user_id and `casual` library to generate mock title and content fields
-    mockPosts.push({
+  //   // Use user id from users table for user_id and `casual` library to generate mock title and content fields
+  //   mockPosts.push({
+  //     user_id: "05f134da-b614-11ec-af3d-52146bdd15d0",
+  //     title: casual.title,
+  //     content: casual.sentences(10),
+  //     type: "Accounting",
+  //     status: "open",
+  //   });
+  // }
+  // Insert mock posts into the table
+
+  await knex("posts")
+    .del()
+    .insert({
       user_id: "05f134da-b614-11ec-af3d-52146bdd15d0",
       title: casual.title,
       content: casual.sentences(10),
       type: "Accounting",
       status: "open",
     });
-  }
-  // Insert mock posts into the table
-
-  await knex("posts").del().insert(mockPosts);
   await knex("users").del().insert({
     google_id: "05f134da-b614-11ec-af3d-52146bdd15d0",
     avatar_url: "https://avatars.githubusercontent.com/u/92953487?v=4",
