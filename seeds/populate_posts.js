@@ -33,7 +33,7 @@ exports.seed = async function (knex) {
       type: "Accounting",
       status: "open",
     });
-  await knex("users").del().insert({
+  await knex("users").insert({
     google_id: "05f134da-b614-11ec-af3d-52146bdd15d0",
     avatar_url: "https://avatars.githubusercontent.com/u/92953487?v=4",
     displayName: "dummy-user",
