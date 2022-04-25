@@ -13,23 +13,23 @@ const helmet = require("helmet");
 const passport = require("passport");
 var GoogleStrategy = require("passport-google-oauth2").Strategy;
 
-// Knex instance
-const knex = require("knex")(require("./knexfile.js").production);
-
-// Create Express app and also allow for app PORT to be optionally specified by an environment variable
+// // Knex instance
+const knex = require("knex")(require("./knexfile.js").development);
+const jwt = require("jsonwebtoken");
+// // Create Express app and also allow for app PORT to be optionally specified by an environment variable
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Require .env files for environment variables (keys and secrets)
+// // Require .env files for environment variables (keys and secrets)
 require("dotenv").config();
 
-// Enable req.body middleware
+// // Enable req.body middleware
 app.use(express.json());
 
-// Initialize HTTP Headers middleware
+// // Initialize HTTP Headers middleware
 app.use(helmet());
 
-// Enable CORS (with additional config options required for cookies)
+// // Enable CORS (with additional config options required for cookies)
 app.use(
   cors({
     origin: true,
@@ -46,83 +46,158 @@ app.use(
   })
 );
 
-app.use(passport.initialize());
-app.use(passport.session());
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-      passReqToCallback: true,
-    },
-    function (_request, _accessToken, _refreshToken, profile, done) {
-      // console.log("GOOGLE profile:", profile);
-      knex("users")
-        .select("id")
-        .where({ google_id: profile.id })
-        .then((user) => {
-          if (user.length) {
-            console.log(user, "found the users and successfully login");
-            // If user is found, pass the user object to serialize function
-            done(null, user[0]);
-          } else {
-            // If user isn't found, we create a record
-            console.log("cannot find id, insert to knex table");
-            knex("users")
-              .insert({
-                google_id: profile.id,
-                email: profile.email,
-                avatar_url: profile.picture,
-                displayName: profile.displayName,
-                givenName: profile.given_name,
-                familyName: profile.family_name,
-              })
-              .then((user) => {
-                console.log(user, "user");
-                // Pass the user object to serialize function
-                done(null, user[0]);
-              })
-              .catch((err) => {
-                console.log("Error creating a user", err);
-              });
-          }
-        })
-        .catch((err) => {
-          console.log("Error fetching a user", err);
-        });
+//normal oauth
+function authorize(req, res, next) {
+  if (!req.headers.authorization) {
+    return res.status(401).json({
+      error: {
+        message: "ERROR MESSAGE",
+      },
+    });
+  }
+  const authTokenArray = req.headers.authorization.split(" ");
+  if (
+    authTokenArray[0].toLowerCase() !== "bearer && authTokenArray.length !==2"
+  ) {
+    return res.status(401).json({
+      error: {
+        message: "ERROR MESSAGE",
+      },
+    });
+  }
+  jwt.verify(authTokenArray[1], process.env.mykey, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: "no" });
+    } else {
+      req.jwtPayload = decoded;
+      next();
     }
-  )
-);
-
-passport.serializeUser((user, done) => {
-  console.log("serializeUser (user object):", user);
-
-  // Store only the user id in session
-  done(null, user.id);
-});
-
-// `deserializeUser` receives a value sent from `serializeUser` `done` function
-// We can then retrieve full user information from our database using the userId
-passport.deserializeUser((userId, done) => {
-  console.log("deserializeUser (user id):", userId);
-
-  // Query user information from the database for currently authenticated user
+  });
+}
+const users = {};
+app.post("/signup", (req, res) => {
+  const { username, email, password } = req.body;
+  users[username] = {
+    email,
+    password, // NOTE: Passwords should NEVER be stored in the clear like this. Use a
+    // library like bcrypt to Hash the password. For demo purposes only.
+  };
   knex("users")
-    .where({ id: userId })
+    .insert({
+      // google_id: req.body.google_id,
+      email: req.body.email,
+      password: req.body.password,
+      avatar_url:
+        "https://firebasestorage.googleapis.com/v0/b/village-345022.appspot.com/o/files%2F124465293-56a001375f9b58eba4ae696f.jpeg?alt=media&token=9070e549-4adb-4356-a141-41119dbdfaa9",
+      displayName: req.body.username,
+    })
     .then((user) => {
-      // Remember that knex will return an array of records, so we need to get a single record from it
-      // console.log("req.user:", user[0]);
-
-      // The full user object will be attached to request object as `req.user`
-      done(null, user[0]);
+      console.log(user, "user");
+      res.json({ success: "true" });
+      // Pass the user object to serialize function
     })
     .catch((err) => {
-      console.log("Error finding user", err);
+      console.log("Error creating a user", err);
     });
 });
 
-const authRoutes = require("./routes/auth");
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+  console.log(password);
+  knex("users")
+    .where({ email: email })
+    .then((user) => {
+      console.log("user2", user[0].password);
+      if (user[0].password === password) {
+        let token = jwt.sign({ email: email }, "secretkey");
+        res.json({ token: token });
+      } else {
+        res.status(403).send({ token: null });
+      }
+      // STEP 1: When a user provides a correct username/password,
+      // the user can be considered authenticated.
+      // Create a JWT token for the user, and add their name to
+      // the token. Send the token back to the client.
+    });
+});
+
+// app.use(passport.initialize());
+// app.use(passport.session());
+// passport.use(
+//   new GoogleStrategy(
+//     {
+//       clientID: process.env.GOOGLE_CLIENT_ID,
+//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//       callbackURL: process.env.GOOGLE_CALLBACK_URL,
+//       passReqToCallback: true,
+//     },
+//     function (_request, _accessToken, _refreshToken, profile, done) {
+//       // console.log("GOOGLE profile:", profile);
+//       knex("users")
+//         .select("id")
+//         .where({ google_id: profile.id })
+//         .then((user) => {
+//           if (user.length) {
+//             console.log(user, "found the users and successfully login");
+//             // If user is found, pass the user object to serialize function
+//             done(null, user[0]);
+//           } else {
+//             // If user isn't found, we create a record
+//             console.log("cannot find id, insert to knex table");
+//             knex("users")
+//               .insert({
+//                 google_id: profile.id,
+//                 email: profile.email,
+//                 avatar_url: profile.picture,
+//                 displayName: profile.displayName,
+//                 givenName: profile.given_name,
+//                 familyName: profile.family_name,
+//               })
+//               .then((user) => {
+//                 console.log(user, "user");
+//                 // Pass the user object to serialize function
+//                 done(null, user[0]);
+//               })
+//               .catch((err) => {
+//                 console.log("Error creating a user", err);
+//               });
+//           }
+//         })
+//         .catch((err) => {
+//           console.log("Error fetching a user", err);
+//         });
+//     }
+//   )
+// );
+
+// passport.serializeUser((user, done) => {
+//   console.log("serializeUser (user object):", user);
+
+//   // Store only the user id in session
+//   done(null, user.id);
+// });
+
+// // `deserializeUser` receives a value sent from `serializeUser` `done` function
+// // We can then retrieve full user information from our database using the userId
+// passport.deserializeUser((userId, done) => {
+//   console.log("deserializeUser (user id):", userId);
+
+//   // Query user information from the database for currently authenticated user
+//   knex("users")
+//     .where({ id: userId })
+//     .then((user) => {
+//       // Remember that knex will return an array of records, so we need to get a single record from it
+//       // console.log("req.user:", user[0]);
+
+//       // The full user object will be attached to request object as `req.user`
+//       done(null, user[0]);
+//     })
+//     .catch((err) => {
+//       console.log("Error finding user", err);
+//     });
+// });
+
+// const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const postsRoutes = require("./routes/posts");
 const applyRoutes = require("./routes/apply");
@@ -132,7 +207,7 @@ app.get("/", (req, res) => {
 });
 
 //routes
-app.use("/auth", authRoutes);
+// app.use("/auth", authRoutes);
 
 app.use("/users", userRoutes);
 
