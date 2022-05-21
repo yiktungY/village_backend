@@ -107,10 +107,10 @@ app.post("/login", (req, res) => {
   knex("users")
     .where({ email: email })
     .then((user) => {
-      console.log("user2", user[0].password);
+      console.log("user2", user[0].id);
       if (user[0].password === password) {
         let token = jwt.sign({ email: email }, "secretkey");
-        res.json({ token: token });
+        res.json({ token: token, id: user[0].id });
       } else {
         res.status(403).send({ token: null });
       }
