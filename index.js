@@ -74,52 +74,116 @@ function authorize(req, res, next) {
     }
   });
 }
-const users = {};
-app.post("/signup", (req, res) => {
-  const { username, email, password } = req.body;
-  users[username] = {
-    email,
-    password, // NOTE: Passwords should NEVER be stored in the clear like this. Use a
-    // library like bcrypt to Hash the password. For demo purposes only.
-  };
-  knex("users")
-    .insert({
-      // google_id: req.body.google_id,
-      email: req.body.email,
-      password: req.body.password,
+const bcrypt = require("bcrypt");
+
+app.post("/signup", async (req, res, next) => {
+  try {
+    const { username, email, password } = req.body;
+    if (!(email && password && username)) {
+      return res.status(400).send({ error: "Data not formatted properly" });
+    }
+    const hash = await bcrypt.hash(password, 10)
+    const user = await knex("users").insert({
+      email: email,
+      password: hash,
       avatar_url:
-        "https://firebasestorage.googleapis.com/v0/b/village-345022.appspot.com/o/files%2F124465293-56a001375f9b58eba4ae696f.jpeg?alt=media&token=9070e549-4adb-4356-a141-41119dbdfaa9",
-      displayName: req.body.username,
+        "https://firebasestorage.googleapis.com/v0/b/village-345022.appspot.com/o/files%2Fsmiling-face.png?alt=media&token=792d8aa7-4d33-4092-86ec-b8c04b58b658",
+      displayName: username,
     })
-    .then((user) => {
-      console.log(user, "user");
-      res.json({ success: "true" });
-      // Pass the user object to serialize function
-    })
-    .catch((err) => {
-      console.log("Error creating a user", err);
-    });
+    let token = jwt.sign({ email: email }, "secretkey");
+    return res.json({ user, token });
+  }
+
+
+  // bcrypt.hash(password, 10).then((hashedPassword) => {
+  //   knex("users")
+  //     .insert({
+  //       email: email,
+  //       password: hashedPassword,
+  //       avatar_url:
+  //         "https://firebasestorage.googleapis.com/v0/b/village-345022.appspot.com/o/files%2Fsmiling-face.png?alt=media&token=792d8aa7-4d33-4092-86ec-b8c04b58b658",
+  //       displayName: username,
+  //     })
+  //   .then((user) => {
+  // console.log("user", user);
+  // let token = jwt.sign({ email: email }, "secretkey");
+  // return res.json({ user, token });
+  // })
+  catch (err) {
+    if (err) {
+      res.status(401).send("user already exists")
+    } else {
+      next(err)
+    }
+  }
+
+
 });
 
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-  console.log(password);
-  knex("users")
-    .where({ email: email })
-    .then((user) => {
-      console.log("user2", user[0].id);
-      if (user[0].password === password) {
-        let token = jwt.sign({ email: email }, "secretkey");
-        res.json({ token: token, id: user[0].id });
-      } else {
-        res.status(403).send({ token: null });
-      }
-      // STEP 1: When a user provides a correct username/password,
-      // the user can be considered authenticated.
-      // Create a JWT token for the user, and add their name to
-      // the token. Send the token back to the client.
-    });
+
+app.post("/login", async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await knex("users").where({ email: email }).first()
+    const isAuthenticated = await bcrypt.compare(password, user.password)
+    if (!user) {
+      console.log({ error: "No user by that email" });
+      res.status(401).json({
+        error: "Wrong email and/or password",
+      });
+    } else if (!isAuthenticated) {
+      console.log({ error: "Wrong username and/or password" });
+      res.status(401).json({ error: "Wrong email and/or password" });
+    } else {
+      const token = jwt.sign({ email: email }, "secretkey");
+      console.log("usertoken", user, token)
+      return res.json({ user, token });
+    }
+    // return bcrypt
+    //   .compare(password, user.password)
+    //   .then((isAuthenticated) => {
+    //     if (!isAuthenticated) {
+    //       res.status(401).json({
+    //         error: "Unauthorized Access!",
+    //       });
+    //     } else {
+    //       let token = jwt.sign({ email: email }, "secretkey");
+    //       return res.json({ authToken: token });
+    //     }
+    //   });
+  } catch (error) {
+    next(error)
+  }
 });
+// app.post("/login", (req, res, next) => {
+//   const { email, password } = req.body;
+//   knex("users")
+//     .where({ email: email })
+//     .first()
+//     .then(user => {
+//       if (!user) {
+//         res.status(401).json({ error: "No user by that name" });
+//       } else {
+//         return bcrypt.compare(password, user.passport).then(isAuthenticated => {
+//           if(!isAuthenticated){
+//             res.status(401).json({error: "Unauthorized Access!"})
+//           })else{
+//             return jwt.sign(user, process.env.SESSION_SECRET, (error. token) => {
+//               res.status(200).json({token})
+//             })
+//           }
+//         })})
+
+// knex("users")
+//   .where({ email: email })
+//   .then((user) => {
+//     if (user[0].password === password) {
+//       let token = jwt.sign({ email: email }, "secretkey");
+//       res.json({ token: token, id: user[0].id });
+//     } else {
+//       res.status(403).send({ token: null });
+//     }
+//   });
 
 // app.use(passport.initialize());
 // app.use(passport.session());
