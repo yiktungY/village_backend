@@ -38,7 +38,7 @@ const getAllPost = (req, res) => {
 };
 
 const createNewPost = (req, res) => {
-  const userId = req.user;
+  const userId = req.body;
   if (userId === undefined)
     return res.status(401).json({ message: "Unauthorized" });
   if (!req.body.title || !req.body.content) {
@@ -48,7 +48,7 @@ const createNewPost = (req, res) => {
   }
   knex("posts")
     .insert({
-      user_id: req.user.id,
+      user_id: 1232132,
       picture_Details: req.body.picture_Details,
       title: req.body.title,
       content: req.body.content,
@@ -60,7 +60,6 @@ const createNewPost = (req, res) => {
       estimate_time: req.body.estimate_time,
     })
     .then((postId) => {
-      console.log(postId, "postId");
       res.status(201).json({ newPostId: postId[0] });
     })
     .catch(() => {

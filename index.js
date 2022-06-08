@@ -155,6 +155,11 @@ app.post("/login", async (req, res, next) => {
     next(error)
   }
 });
+
+app.delete("/logout", (req, res, next) => {
+  res.sendStatus(204);
+});
+
 // app.post("/login", (req, res, next) => {
 //   const { email, password } = req.body;
 //   knex("users")
