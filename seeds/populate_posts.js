@@ -1,20 +1,15 @@
-// A library for generating mock data
+
 const casual = require("casual");
 
 exports.seed = function (knex) {
-  // First, delete all posts from the table
 
-  return knex("applyList")
-    .del()
+  return knex("applyList").del()
     .then(() => {
-      return knex("posts")
-        .del()
-        .then(() => {
-          // Next delete a mock user
-          return knex("users").del();
-        })
+      return knex("posts").del()
     })
-
+    .then(() => {
+      return knex("users").del()
+    })
     .then(() => {
       const users = [
         {
