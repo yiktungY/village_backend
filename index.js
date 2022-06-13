@@ -47,34 +47,34 @@ app.use(
 );
 
 //normal oauth
-function authorize(req, res, next) {
-  if (!req.headers.authorization) {
-    return res.status(401).json({
-      error: {
-        message: "ERROR MESSAGE",
-      },
-    });
-  }
-  const authTokenArray = req.headers.authorization.split(" ");
-  if (
-    authTokenArray[0].toLowerCase() !== "bearer && authTokenArray.length !==2"
-  ) {
-    return res.status(401).json({
-      error: {
-        message: "ERROR MESSAGE",
-      },
-    });
-  }
-  jwt.verify(authTokenArray[1], process.env.mykey, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: "no" });
-    } else {
-      req.jwtPayload = decoded;
-      next();
-    }
-  });
-}
-const bcrypt = require("bcrypt");
+// function authorize(req, res, next) {
+//   if (!req.headers.authorization) {
+//     return res.status(401).json({
+//       error: {
+//         message: "ERROR MESSAGE",
+//       },
+//     });
+//   }
+//   const authTokenArray = req.headers.authorization.split(" ");
+//   if (
+//     authTokenArray[0].toLowerCase() !== "bearer && authTokenArray.length !==2"
+//   ) {
+//     return res.status(401).json({
+//       error: {
+//         message: "ERROR MESSAGE",
+//       },
+//     });
+//   }
+//   jwt.verify(authTokenArray[1], process.env.mykey, (err, decoded) => {
+//     if (err) {
+//       return res.status(401).json({ message: "no" });
+//     } else {
+//       req.jwtPayload = decoded;
+//       next();
+//     }
+//   });
+// }
+// const bcrypt = require("bcrypt");
 
 app.post("/signup", async (req, res, next) => {
   try {
@@ -83,14 +83,15 @@ app.post("/signup", async (req, res, next) => {
       return res.status(400).send({ error: "Data not formatted properly" });
     }
     const hash = await bcrypt.hash(password, 10)
-    const user = await knex("users").insert({
+    await knex("users").insert({
       email: email,
       password: hash,
       avatar_url:
         "https://firebasestorage.googleapis.com/v0/b/village-345022.appspot.com/o/files%2Fsmiling-face.png?alt=media&token=792d8aa7-4d33-4092-86ec-b8c04b58b658",
       displayName: username,
     })
-    let token = jwt.sign({ email: email }, "secretkey");
+    const user = await knex("users").where({ email: email }).first()
+    let token = jwt.sign({ id: user.id }, process.env.SESSION_SECRET, { expiresIn: 86400 });
     return res.json({ user, token });
   }
 
@@ -135,25 +136,31 @@ app.post("/login", async (req, res, next) => {
       console.log({ error: "Wrong username and/or password" });
       res.status(401).json({ error: "Wrong email and/or password" });
     } else {
-      const token = jwt.sign({ email: email }, "secretkey");
-      console.log("usertoken", user, token)
+      const token = jwt.sign({ id: user.id }, process.env.SESSION_SECRET,
+        { expiresIn: 86400 });
       return res.json({ user, token });
     }
-    // return bcrypt
-    //   .compare(password, user.password)
-    //   .then((isAuthenticated) => {
-    //     if (!isAuthenticated) {
-    //       res.status(401).json({
-    //         error: "Unauthorized Access!",
-    //       });
-    //     } else {
-    //       let token = jwt.sign({ email: email }, "secretkey");
-    //       return res.json({ authToken: token });
-    //     }
-    //   });
   } catch (error) {
     next(error)
   }
+});
+
+app.get("/user", (req, res, next) => {
+  const token = req.headers["x-access-token"];
+  if (token) {
+    jwt.verify(token, process.env.SESSION_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(400).json({ error: err });
+      }
+      knex("users").where({ id: decoded.id }).first()
+        .then((user) => {
+          return res.json({ user });
+        });
+    });
+  } else {
+    next(error)
+  }
+
 });
 
 app.delete("/logout", (req, res, next) => {
@@ -283,6 +290,25 @@ app.use("/users", userRoutes);
 app.use("/posts", postsRoutes);
 
 app.use("/apply", applyRoutes);
+
+// app.use(function (req, res, next) {
+//   const token = req.headers["x-access-token"];
+//   if (token) {
+//     jwt.verify(token, process.env.SESSION_SECRET, (err, decoded) => {
+//       if (err) {
+//         return next();
+//       }
+//       knex("users").where({ id: decoded.id }).first()
+//         .then((user) => {
+//           req.user = user;
+//           return next();
+//         });
+//     });
+//   } else {
+//     return next();
+//   }
+// });
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Server listening on port ${PORT}.`);

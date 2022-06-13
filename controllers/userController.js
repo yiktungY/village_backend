@@ -1,4 +1,4 @@
-const knex = require("knex")(require("../knexfile").development);
+const knex = require("knex")(require("../knexfile").production);
 
 const getAllUser = (req, res) => {
   knex("users")
@@ -18,7 +18,6 @@ const getAllUser = (req, res) => {
 
 const getUserById = (req, res) => {
   const typeId = req.params.id;
-  console.log(typeId);
   knex("users")
     .where({ id: typeId })
     .then((user) => {
@@ -53,10 +52,7 @@ const updateUserProfile = async (req, res) => {
 
 const getAllPostbyUserId = (req, res) => {
   const userId = req.params.id;
-  // console.log("req", req);
-
-  knex("posts");
-  knex
+  knex("posts")
     .select(
       "posts.id as post_id",
       "posts.title",

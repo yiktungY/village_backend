@@ -1,7 +1,6 @@
-const knex = require("knex")(require("../knexfile.js").development);
+const knex = require("knex")(require("../knexfile.js").production);
 
 const getAllPost = (req, res) => {
-  // console.log("req", req);
   knex
     .select(
       "posts.id as post_id",
@@ -38,7 +37,7 @@ const getAllPost = (req, res) => {
 };
 
 const createNewPost = (req, res) => {
-  const userId = req.body;
+  const { userId, picture_Details, title, content, status, type, requireDate, salary, salary_replacement, estimate_time } = req.body;
   if (userId === undefined)
     return res.status(401).json({ message: "Unauthorized" });
   if (!req.body.title || !req.body.content) {
@@ -48,16 +47,16 @@ const createNewPost = (req, res) => {
   }
   knex("posts")
     .insert({
-      user_id: 1232132,
-      picture_Details: req.body.picture_Details,
-      title: req.body.title,
-      content: req.body.content,
-      status: req.body.status,
-      type: req.body.type,
-      requireDate: req.body.requireDate,
-      salary: req.body.salary,
-      salary_replacement: req.body.salary_replacement,
-      estimate_time: req.body.estimate_time,
+      user_id: userId,
+      picture_Details: picture_Details,
+      title: title,
+      content: content,
+      status: status,
+      type: type,
+      requireDate: requireDate,
+      salary: salary,
+      salary_replacement: salary_replacement,
+      estimate_time: estimate_time,
     })
     .then((postId) => {
       res.status(201).json({ newPostId: postId[0] });
@@ -99,7 +98,6 @@ const getPostById = (req, res) => {
 const editPost = async (req, res) => {
   const typeId = req.params.postID;
   const changes = req.body;
-  // console.log(typeId);
   try {
     const count = await knex("posts").where({ id: typeId }).update(changes);
     if (count) {
