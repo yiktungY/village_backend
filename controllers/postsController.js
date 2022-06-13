@@ -1,4 +1,4 @@
-const knex = require("knex")(require("../knexfile.js").production);
+const knex = require("knex")(require("../knexfile.js").development);
 
 const getAllPost = (req, res) => {
   knex

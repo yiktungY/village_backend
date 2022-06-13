@@ -74,7 +74,7 @@ app.use(
 //     }
 //   });
 // }
-// const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 
 app.post("/signup", async (req, res, next) => {
   try {
@@ -94,7 +94,6 @@ app.post("/signup", async (req, res, next) => {
     let token = jwt.sign({ id: user.id }, process.env.SESSION_SECRET, { expiresIn: 86400 });
     return res.json({ user, token });
   }
-
 
   // bcrypt.hash(password, 10).then((hashedPassword) => {
   //   knex("users")
@@ -117,8 +116,6 @@ app.post("/signup", async (req, res, next) => {
       next(err)
     }
   }
-
-
 });
 
 
