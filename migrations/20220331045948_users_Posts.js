@@ -47,23 +47,11 @@ exports.up = function (knex) {
       table.uuid('post_id').notNullable();
       table.foreign("post_id").references("id").inTable("posts");
     });
-  // .createTable("genre", (table) => {
-  //   table.increments("id").primary();
-  //   table.string("type");
-  //   table.uuid("post_id").notNullable();
-  //   table
-  //     .foreign("post_id")
-  //     .references("id")
-  //     .inTable("posts")
-  //     .onUpdate("CASCADE")
-  //     .onDelete("CASCADE");
-  // });
 };
 
 exports.down = function (knex) {
   return (
     knex.schema
-      // .dropTable("genre")
       .dropTable("applyList")
       .dropTable("posts")
       .dropTable("users")
