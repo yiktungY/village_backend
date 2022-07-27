@@ -2,7 +2,6 @@ exports.up = function (knex) {
   return knex.schema
     .createTable("users", (table) => {
       table.uuid("id").primary().defaultTo(knex.raw("(UUID())"));
-      table.string("google_id");
       table.string("password").notNullable();
       table.string("avatar_url").notNullable();
       table.string("displayName").notNullable();
@@ -29,7 +28,7 @@ exports.up = function (knex) {
       table.string("estimate_time");
       table.string("status").notNullable();
       table.timestamp("updated_at").defaultTo(knex.fn.now());
-      table.uuid("user_id").notNullable();
+      table.uuid('user_id').notNullable();
       table.foreign("user_id").references("id").inTable("users");
     })
     .createTable("applyList", (table) => {
@@ -42,10 +41,10 @@ exports.up = function (knex) {
       table.string("username").notNullable();
       table.string("post_title").notNullable();
       table.timestamp("updated_at").defaultTo(knex.fn.now());
-      table.uuid("user_id").notNullable();
+      table.uuid('user_id').notNullable();
       table.foreign("user_id").references("id").inTable("users");
 
-      table.uuid("post_id").notNullable();
+      table.uuid('post_id').notNullable();
       table.foreign("post_id").references("id").inTable("posts");
     });
   // .createTable("genre", (table) => {

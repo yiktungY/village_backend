@@ -1,4 +1,4 @@
-const knex = require("knex")(require("../knexfile.js").production);
+const knex = require("knex")(require("../knexfile.js").development);
 
 const applyToPost = (req, res) => {
   const { userId, username, post_id, post_title, content, offer } = req.body

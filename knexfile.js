@@ -5,7 +5,7 @@ module.exports = {
       host: "127.0.0.1",
       user: "root",
       password: "rootroot",
-      database: "village_database",
+      database: "village",
       charset: "utf8",
     },
   },

@@ -14,7 +14,7 @@ const passport = require("passport");
 var GoogleStrategy = require("passport-google-oauth2").Strategy;
 
 // // Knex instance
-const knex = require("knex")(require("./knexfile.js").production);
+const knex = require("knex")(require("./knexfile.js").development);
 const jwt = require("jsonwebtoken");
 // // Create Express app and also allow for app PORT to be optionally specified by an environment variable
 const app = express();
