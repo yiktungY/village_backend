@@ -53,7 +53,6 @@ app.use("/users", userRoutes);
 app.use("/posts", postsRoutes);
 app.use("/apply", applyRoutes);
 
-
 app.listen(PORT, () => {
   console.log(`🚀 Server listening on port ${PORT}.`);
 });

@@ -6,7 +6,22 @@ const signUp = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
     if (!(email && password && username)) {
+      console.log({ error: "Data not formatted properly" });
       return res.status(400).send({ error: "Data not formatted properly" });
+    }
+    const isEmailReg = await knex("users").where({ email: email }).first()
+    if (isEmailReg) {
+      console.log({ error: "This email has already been registered!" })
+      return res.status(401).json({
+        error: "This email has already been registered!",
+      })
+    }
+    const isUserNameReg = await knex("users").where({ displayName: username }).first()
+    if (isUserNameReg) {
+      console.log({ error: "This username has already been used!" })
+      return res.status(401).json({
+        error: "This username has already been used!",
+      })
     }
     const hash = await bcrypt.hash(password, 10)
     await knex("users").insert({
@@ -18,7 +33,7 @@ const signUp = async (req, res, next) => {
     })
     const user = await knex("users").where({ email: email }).first()
     let token = jwt.sign({ id: user.id }, process.env.SESSION_SECRET, { expiresIn: 86400 });
-    return res.json({ user, token });
+    return res.status(200).json({ user, token });
   }
   catch (err) {
     if (err) {
@@ -33,19 +48,20 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await knex("users").where({ email: email }).first()
-    const isAuthenticated = await bcrypt.compare(password, user.password)
     if (!user) {
       console.log({ error: "No user by that email" });
-      res.status(401).json({
-        error: "Wrong email and/or password",
-      });
-    } else if (!isAuthenticated) {
+      return res.status(401).json({
+        error: "No user by that email",
+      })
+    }
+    const isAuthenticated = await bcrypt.compare(password, user.password)
+    if (!isAuthenticated) {
       console.log({ error: "Wrong username and/or password" });
-      res.status(401).json({ error: "Wrong email and/or password" });
+      return res.status(401).json({ error: "Wrong email and/or password" });
     } else {
       const token = jwt.sign({ id: user.id }, process.env.SESSION_SECRET,
         { expiresIn: 86400 });
-      return res.json({ user, token });
+      return res.status(200).json({ user, token });
     }
   } catch (error) {
     next(error)
@@ -65,7 +81,7 @@ const getUser = (req, res, next) => {
         });
     });
   } else {
-    next(error)
+    next("cannot get user")
   }
 }
 
