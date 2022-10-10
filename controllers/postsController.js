@@ -66,33 +66,35 @@ const createNewPost = (req, res) => {
     });
 };
 
-const getPostById = (req, res) => {
-  const typeId = req.params.postID;
-  knex("posts")
-    .join("users", "posts.user_id", "=", "users.id")
-    .select(
-      "posts.id as post_id",
-      "users.id as user_id",
-      "users.displayname",
-      "users.avatar_url",
-      "posts.title",
-      "posts.content",
-      "posts.picture_Details",
-      "posts.status",
-      "posts.type",
-      "posts.salary",
-      "posts.requireDate",
-      "posts.salary_replacement",
-      "posts.estimate_time",
-      "posts.updated_at"
-    )
-    .where("posts.id", typeId)
-    .then((data) => {
-      res.json(data.shift());
-    })
-    .catch(() => {
-      res.status(500).json({ message: "Error fetching posts" });
-    });
+const getPostById = async (req, res) => {
+  try {
+    const typeId = req.params.postID;
+    await knex("posts").where({ id: typeId }).update(viewed++);
+    const post = await knex("posts")
+      .join("users", "posts.user_id", "=", "users.id")
+      .select(
+        "posts.id as post_id",
+        "users.id as user_id",
+        "users.displayname",
+        "users.avatar_url",
+        "posts.title",
+        "posts.content",
+        "posts.picture_Details",
+        "posts.status",
+        "posts.type",
+        "posts.salary",
+        "posts.requireDate",
+        "posts.salary_replacement",
+        "posts.estimate_time",
+        "posts.updated_at"
+      ).where("posts.id", typeId)
+    if (post) {
+      res.json(data.shift())
+    }
+  }
+  catch (error) {
+    res.status(500).json({ message: `${error}: Error fetching posts` });
+  };
 };
 
 const editPost = async (req, res) => {

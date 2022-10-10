@@ -26,6 +26,7 @@ exports.up = function (knex) {
       table.string("salary");
       table.string("salary_replacement");
       table.string("estimate_time");
+      table.integer("viewed");
       table.string("status").notNullable();
       table.timestamp("updated_at").defaultTo(knex.fn.now());
       table.uuid('user_id').notNullable();

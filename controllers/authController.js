@@ -77,7 +77,7 @@ const getUser = (req, res, next) => {
       }
       knex("users").where({ id: decoded.id }).first()
         .then((user) => {
-          return res.json({ user });
+          return res.status(200).json({ user });
         });
     });
   } else {
