@@ -37,7 +37,7 @@ const getUserById = (req, res) => {
 const updateUserProfile = async (req, res) => {
   const { id } = req.params;
   const changes = req.body;
-
+  console.log("change", changes)
   try {
     const count = await knex("users").where({ id }).update(changes);
     if (count) {

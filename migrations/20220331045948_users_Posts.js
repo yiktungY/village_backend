@@ -13,6 +13,7 @@ exports.up = function (knex) {
       table.string("tags");
       table.integer("age");
       table.integer("rating");
+      table.boolean("finishedBoarding").defaultTo(false)
       table.integer("doneCase").defaultTo(0);
       table.timestamp("updatedAt").defaultTo(knex.fn.now());
     })
