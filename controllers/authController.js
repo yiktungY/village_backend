@@ -27,7 +27,7 @@ const signUp = async (req, res, next) => {
     await knex("users").insert({
       email: email,
       password: hash,
-      avatar_url:
+      avatarUrl:
         "https://firebasestorage.googleapis.com/v0/b/village-345022.appspot.com/o/files%2Fsmiling-face.png?alt=media&token=792d8aa7-4d33-4092-86ec-b8c04b58b658",
       displayName: username,
     })

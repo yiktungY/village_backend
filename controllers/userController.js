@@ -58,16 +58,16 @@ const getAllPostbyUserId = (req, res) => {
       "posts.title",
       "posts.content",
       "posts.type",
-      "posts.picture_Details",
-      "posts.updated_at",
+      "posts.jobImageUrl",
+      "posts.updatedAt",
       "posts.status",
       "users.id as user_id",
       "users.displayName",
-      "users.avatar_url"
+      "users.avatarUrl"
     )
     .from("posts")
     .leftJoin("users", "posts.user_id", "users.id")
-    .orderBy("posts.updated_at", "desc")
+    .orderBy("posts.updatedAt", "desc")
     .where("users.id", userId)
     .then((posts) => {
       let updatedPosts = posts;

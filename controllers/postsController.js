@@ -5,22 +5,23 @@ const getAllPost = (req, res) => {
     .select(
       "posts.id as post_id",
       "posts.title",
-      "posts.updated_at",
-      "posts.picture_Details",
+      "posts.updatedAt",
+      "posts.jobImageUrl",
       "posts.status",
       "posts.salary",
       "posts.type",
       "posts.requireDate",
-      "salary_replacement",
+      "salaryReplacement",
       "users.id as user_id",
-      "users.avatar_url",
+      "users.avatarUrl",
       "users.displayName"
     )
     .from("posts")
     .leftJoin("users", "posts.user_id", "users.id")
-    .orderBy("posts.updated_at", "desc")
+    .orderBy("posts.updatedAt", "desc")
     .then((posts) => {
       let updatedPosts = posts;
+      console.log(updatedPosts)
       if (req.user) {
         updatedPosts = updatedPosts.map((post) => {
           return {
@@ -37,7 +38,7 @@ const getAllPost = (req, res) => {
 };
 
 const createNewPost = (req, res) => {
-  const { userId, picture_Details, title, content, status, type, requireDate, salary, salary_replacement, estimate_time } = req.body;
+  const { userId, jobImageUrl, title, content, status, type, requireDate, salary, salaryReplacement, estimateHour, location } = req.body;
   if (userId === undefined)
     return res.status(401).json({ message: "Unauthorized" });
   if (!req.body.title || !req.body.content) {
@@ -48,15 +49,16 @@ const createNewPost = (req, res) => {
   knex("posts")
     .insert({
       user_id: userId,
-      picture_Details: picture_Details,
+      jobImageUrl: jobImageUrl,
       title: title,
       content: content,
       status: status,
       type: type,
       requireDate: requireDate,
       salary: salary,
-      salary_replacement: salary_replacement,
-      estimate_time: estimate_time,
+      location: location,
+      salaryReplacement: salaryReplacement,
+      estimateHour: estimateHour,
     })
     .then((postId) => {
       res.status(201).json({ newPostId: postId[0] });
@@ -69,27 +71,28 @@ const createNewPost = (req, res) => {
 const getPostById = async (req, res) => {
   try {
     const typeId = req.params.postID;
-    await knex("posts").where({ id: typeId }).update(viewed++);
+    // await knex("posts").where({ id: typeId }).update(viewed++);
     const post = await knex("posts")
       .join("users", "posts.user_id", "=", "users.id")
       .select(
         "posts.id as post_id",
         "users.id as user_id",
         "users.displayname",
-        "users.avatar_url",
+        "users.avatarUrl",
         "posts.title",
         "posts.content",
-        "posts.picture_Details",
+        "posts.location",
+        "posts.jobImageUrl",
         "posts.status",
         "posts.type",
         "posts.salary",
         "posts.requireDate",
-        "posts.salary_replacement",
-        "posts.estimate_time",
-        "posts.updated_at"
+        "posts.salaryReplacement",
+        "posts.estimateHour",
+        "posts.updatedAt"
       ).where("posts.id", typeId)
     if (post) {
-      res.json(data.shift())
+      res.status(200).json(post.shift())
     }
   }
   catch (error) {
@@ -135,21 +138,21 @@ const getPostbyGenre = (req, res) => {
     .select(
       "posts.id as post_id",
       "posts.title",
-      "posts.updated_at",
+      "posts.updatedAt",
       "posts.status",
-      "posts.picture_Details",
+      "posts.jobImageUrl",
       "posts.salary",
       "posts.type",
       "posts.requireDate",
-      "salary_replacement",
+      "salaryReplacement",
       "users.id as user_id",
-      "users.avatar_url",
+      "users.avatarUrl",
       "users.displayName"
     )
     .from("posts")
     .where("posts.type", category)
     .leftJoin("users", "posts.user_id", "users.id")
-    .orderBy("posts.updated_at", "desc")
+    .orderBy("posts.updatedAt", "desc")
     .then((posts) => {
       let updatedPosts = posts;
       if (req.user) {

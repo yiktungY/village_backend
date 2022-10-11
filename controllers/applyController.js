@@ -1,36 +1,30 @@
 const knex = require("knex")(require("../knexfile.js").development);
 
-const applyToPost = (req, res) => {
-  const { userId, username, post_id, post_title, content, offer } = req.body
-  if (userId === undefined)
-    return res.status(401).json({ message: "Unauthorized" });
-  if (!post_title || !content) {
-    return res
-      .status(400)
-      .json({ message: "Missing post tilte or content fields" });
-  }
-  knex("applyList")
-    .insert({
-      user_id: userId,
-      username: username,
-      post_id: post_id,
-      post_title: post_title,
+const applyToPost = async (req, res) => {
+  try {
+    const { userId, postId, content, offer } = req.body
+    if (!userId || !postId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    await knex("applyList").insert({
       content: content,
       offer: offer,
+      user_id: userId,
+      post_id: postId,
     })
-    .then((data) => {
-      res.status(201).json({ newUser: data[0] });
-    })
-    .catch(() => {
-      res.status(500).json({ message: "Error creating a new post" });
-    });
+    return res.status(201).json({ message: "Apply successfully" });
+
+  }
+  catch (error) {
+    res.status(500).json({ message: error });
+  };
 };
 
 const getApplicantsById = (req, res) => {
   const postId = req.params.postID;
   knex("applyList")
     .where("post_id", postId)
-    .orderBy("updated_at", "desc")
+    .orderBy("updatedAt", "desc")
     .then((data) => {
       res.json(data);
     })
